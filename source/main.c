@@ -210,22 +210,23 @@ void payload(struct knote *kn) {
 	// Disable write protection
 	uint64_t cr0 = readCr0();
 	writeCr0(cr0 & ~X86_CR0_WP);
-
 	
-	//*(uint16_t *)0xFFFFFFFF827E51BE = 0x00C3; // return 0, so authmgr is always loadable? !doesnt work! 
-
+	
+	// patches to allow self loading on 1.01 for decryption. * offsets subbed by 0x1B6AF8 for alignment
+	
+	// patch invokecheck error -13(0xfffffff3) to be 0 for decryting root selfs, may not work first time but 2nd try does it.
+	
+	*(uint32_t *)0xFFFFFFFF827e82f6 = 0x00000000;
+	*(uint32_t *)0xFFFFFFFF827e8316 = 0x00000000;
+	
+	
 	// bomb sceSblACMgrIsAllowedToMmapSelf with NOP bombs so it skips to return 1
 	*(uint32_t *)0xFFFFFFFF8264F460 = 0x90909090; // allowed to mmap self always
 	*(uint16_t *)0xFFFFFFFF8264F464 = 0x9090; // allowed to mmap self always
 	*(uint32_t *)0xFFFFFFFF8264F46B = 0x90909090; // allowed to mmap self always
 
-	// ! needs adding 1.01 offsets
-	// sysctl_machdep_rcmgr_debug_menu and sysctl_machdep_rcmgr_store_moe
-	//*(uint16_t *)0xFFFFFFFF8332431A = 0x9090;
-	//*(uint16_t *)0xFFFFFFFF82607826 = 0x9090;
 	
-	//*(char *)0xFFFFFFFF8332431A = 1;
-	//*(char *)0xFFFFFFFF83324338 = 1;
+	
 
 	// tid patch 1.01
 	*(char *)0xFFFFFFFF833DC975 = 0x82;
