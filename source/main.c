@@ -1,9 +1,11 @@
 
 #include "ps4.h"
+
+#define DEBUG_SOCKET
+
 #include "defines.h"
 #include "elf64.h"
 
-#define DEBUG_SOCKET
 #define TRUE 1
 #define FALSE 0
 
