@@ -1,30 +1,16 @@
-/*
-	Code written based on info available here http://cturt.github.io/dlclose-overflow.html
-
-	See attached LICENCE file
-	Thanks to CTurt and qwertyoruiop
-
-	- @kr105rlz
-*/
 
 #include "ps4.h"
-
-#define DEBUG_SOCKET
 #include "defines.h"
 #include "elf64.h"
+
+#define DEBUG_SOCKET
+#define TRUE 1
+#define FALSE 0
 
 static int sock;
 static void *dump;
 
-uint64_t (*sceRegMgrSetInt)(uint32_t reg, int val) = (void *)0xFFFFFFFF826D4410;
-
-
 // dump file functions
-
-
-
-#define TRUE 1
-#define FALSE 0
 
 typedef struct {
     int index;
@@ -186,12 +172,7 @@ void decrypt_and_dump_self(char *selfFile, char *saveFile) {
     }
 }
 
-
-
-
-
-
-
+// dlclose payload funtions
 
 void payload(struct knote *kn) {
 	struct thread *td;
@@ -221,15 +202,12 @@ void payload(struct knote *kn) {
 	
 	
 	// bomb sceSblACMgrIsAllowedToMmapSelf with NOP bombs so it skips to return 1
-	*(uint32_t *)0xFFFFFFFF8264F460 = 0x90909090; // allowed to mmap self always
-	*(uint16_t *)0xFFFFFFFF8264F464 = 0x9090; // allowed to mmap self always
-	*(uint32_t *)0xFFFFFFFF8264F46B = 0x90909090; // allowed to mmap self always
-
-	
-	
+	*(uint32_t *)0xFFFFFFFF8264F460 = 0x90909090; 
+	*(uint16_t *)0xFFFFFFFF8264F464 = 0x9090;
+	*(uint32_t *)0xFFFFFFFF8264F46B = 0x90909090; 
 
 	// tid patch 1.01
-	*(char *)0xFFFFFFFF833DC975 = 0x82;
+	*(char *)0xFFFFFFFF833DC975 = 0x82; // devkit patch cause why the hell not
 	
 	// Restore write protection
 	writeCr0(cr0);
@@ -422,6 +400,7 @@ int _main(void) {
 	printfsocket("[+] UID = %d\n", getuid());
 	printfsocket("[+] GID = %d\n", getgid());
 	
+	
 	if(getuid() != 0){
 		// Create exploit thread
 		if(scePthreadCreate(&thread, NULL, exploitThread, NULL, "exploitThread") != 0) {
@@ -442,17 +421,9 @@ int _main(void) {
 		printfsocket("[+] Kernel patch success!\n");
 	}
 
-
-
-
-
+	// decrypt whatever you like ;)
 	decrypt_and_dump_self("/system/vsh/SceShellCore.elf", "/user/SceShell.elf");
 		
-
-
-   
-
-
 	
 #ifdef DEBUG_SOCKET
 	munmap(dump, PAGE_SIZE);	
